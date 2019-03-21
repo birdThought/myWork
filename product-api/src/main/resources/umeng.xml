@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+    ">
+
+    <context:property-placeholder location="classpath:sysConfig.properties" />
+    <context:property-placeholder location="classpath:environment.properties" />
+
+    <bean class="com.lifeshs.product.component.umeng.util.Key" name="appAndroidKey">
+        <property name="appKey" value="${umeng.app.android.key}" />
+        <property name="masterSecret" value="${umeng.app.android.masterSecret}" />
+    </bean>
+    <bean class="com.lifeshs.product.component.umeng.util.Key" name="appIOSKey">
+        <property name="appKey" value="${umeng.app.ios.key}" />
+        <property name="masterSecret" value="${umeng.app.ios.masterSecret}" />
+    </bean>
+    <bean class="com.lifeshs.product.component.umeng.util.Key" name="mappAndroidKey">
+        <property name="appKey" value="${umeng.mapp.android.key}" />
+        <property name="masterSecret" value="${umeng.mapp.android.masterSecret}" />
+    </bean>
+    <bean class="com.lifeshs.product.component.umeng.util.Key" name="mappIOSKey">
+        <property name="appKey" value="${umeng.mapp.ios.key}" />
+        <property name="masterSecret" value="${umeng.mapp.ios.masterSecret}" />
+    </bean>
+
+
+
+
+    <bean class="com.lifeshs.product.thirdservice.UMengPushService">
+        <constructor-arg name="appAndroidKey" ref="appAndroidKey" />
+        <constructor-arg name="appIOSKey" ref="appIOSKey" />
+        <constructor-arg name="mappAndroidKey" ref="mappAndroidKey" />
+        <constructor-arg name="mappIOSKey" ref="mappIOSKey" />
+        <constructor-arg name="productionMode" value="${umeng.productionMode}" />
+    </bean>
+
+</beans>
