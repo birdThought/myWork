@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lifeshs.product.api.dao.doctor.userInfo.UserInfoDao">
+
+    <select id="getUserInfo" parameterType="list" resultType="com.lifeshs.product.api.domain.po.user.UserInfoPO">
+        SELECT
+        *
+        FROM
+        t_user u
+        LEFT JOIN t_user_diseases d ON u.id = d.userId
+        WHERE
+        <foreach collection="id" open="u.id in(" close=")" item="id" separator=",">
+            #{id}
+        </foreach>
+
+    </select>
+
+    <select id="getDepartmentById" resultType="Integer">
+        select dr.departmentId from t_doctor_department_relation dr where dr.doctorId = #{id}
+    </select>
+
+    <select id="countMeasureList" resultType="Integer">
+        SELECT
+        COUNT(*)
+        FROM
+        t_doctor_department_relation ddr
+        LEFT JOIN t_data_department dd ON ddr.departmentId = dd.id
+        LEFT JOIN t_doctor_user_relation dur ON dur.doctorId = ddr.doctorId
+        LEFT JOIN t_user u ON u.id = dur.userId
+        LEFT JOIN t_user_diseases ud ON u.id = ud.userId
+        RIGHT JOIN (SELECT ur.* FROM t_userInfo_read ur where ur.doctorId in (select doctorId from t_doctor_department_relation where departmentId = #{id}) ORDER BY IFNULL(
+        ur.updateTime,
+        ur.createTime
+        ) DESC) as r  ON u.id = r.userId
+        WHERE
+        ddr.departmentId = #{id}
+        GROUP BY r.userId
+        ORDER BY IFNULL(
+        r.updateTime,
+        r.createTime
+        ) DESC
+    </select>
+
+    <select id="getUserMeasureList" resultMap="UserMeasure">
+        SELECT
+        u.id,
+        u.userName,
+        IFNULL(u.realName, u.userName) AS realName,
+        u.photo,
+        ud.diseasesName,
+        ud.id AS diseasesId,
+        IFNULL(
+        r.updateTime,
+        r.createTime
+        ) AS `date`,
+        r.device,
+        r.isRead
+        FROM
+        t_doctor_department_relation ddr
+        LEFT JOIN t_data_department dd ON ddr.departmentId = dd.id
+        LEFT JOIN t_doctor_user_relation dur ON dur.doctorId = ddr.doctorId
+        LEFT JOIN t_user u ON u.id = dur.userId
+        LEFT JOIN t_user_diseases ud ON u.id = ud.userId
+        RIGHT JOIN (SELECT ur.* FROM t_userInfo_read ur where ur.doctorId in (select doctorId from t_doctor_department_relation where departmentId = #{id}) ORDER BY IFNULL(
+        ur.updateTime,
+        ur.createTime
+        ) DESC) as r  ON u.id = r.userId
+        WHERE
+        ddr.departmentId = #{id}
+        GROUP BY r.userId
+        ORDER BY IFNULL(
+        r.updateTime,
+        r.createTime
+        ) DESC
+        limit #{startRow},#{pageSize}
+    </select>
+
+    <resultMap id="UserMeasure" type="com.lifeshs.product.api.domain.po.user.UserMeasurePO">
+        <result column="id" property="id"/>
+        <result column="date" property="date"/>
+        <result column="device" property="device"/>
+        <result column="isRead" property="isRead"/>
+        <result column="userName" property="userName"/>
+        <result column="realName" property="realName"/>
+        <result column="photo" property="photo"/>
+        <result column="diseasesId" property="diseasesId"/>
+        <result column="diseasesName" property="diseasesName"/>
+    </resultMap>
+
+    <update id="updateUserDisease">
+        UPDATE t_user_diseases set diseasesId = #{diseasesId},diseasesName = #{diseasesName}, modifyDate = NOW() where userId = #{id}
+    </update>
+    
+    <select id="getDiseases" resultType="com.lifeshs.product.api.domain.po.DiseasesPO">
+        SELECT * from t_data_diseases where deleted = 0
+    </select>
+
+    <select id="getDepartmentUserById" resultType="Integer">
+        SELECT
+        userId
+        FROM
+        t_doctor_user_relation
+        WHERE
+        doctorId IN (
+        SELECT
+        doctorId
+        FROM
+        t_doctor_department_relation
+        WHERE
+        departmentId = (
+        SELECT
+        dr.departmentId
+        FROM
+        t_doctor_department_relation dr
+        WHERE
+        dr.doctorId = #{id}
+        )
+        );
+    </select>
+
+    <select id="getUserRecord" resultType="com.lifeshs.product.api.domain.po.record.UserRecordSortPO">
+        SELECT us.id,us.userName,us.photo,us.realName,greatest(IFNULL(rd.createDate,0),IFNULL(rm.createDate,0),IFNULL(rp.createDate,0),IFNULL(rs.createDate,0)) as max_data
+        FROM
+        t_user us
+        LEFT  JOIN (select * from t_record_diet where createDate = (select MAX(createDate) from t_record_diet  where userId in(${ids}))) rd ON us.id = rd.userId
+        LEFT JOIN (select * from  t_record_medical where createDate = (select MAX(createDate) from t_record_medical where userId in(${ids})) and userId in(${ids})) rm ON us.id = rm.userId
+        LEFT JOIN (select * from  t_record_physicals where createDate = (select MAX(createDate) from t_record_physicals where userId in(${ids})) and userId in(${ids}) GROUP BY createDate) rp ON us.id = rp.userId
+        LEFT JOIN (select * from  t_record_sport where createDate = (select MAX(createDate) from t_record_sport where userId in(${ids})) and userId in(${ids}) GROUP BY createDate) rs on us.id = rs.userId
+        where us.id in(${ids})
+        ORDER BY max_data desc
+        limit #{startRow},#{pageSize}
+    </select>
+
+</mapper>
