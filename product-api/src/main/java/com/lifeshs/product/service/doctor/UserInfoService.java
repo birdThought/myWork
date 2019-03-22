@@ -56,4 +56,10 @@ public interface UserInfoService {
      * @param
      */
     Paging<UserRecordSortPO> getUserRecord(List<Integer> userList, Integer pageIndex, Integer pageSize);
+
+    /**
+     * 根据医生id获取同科室用户的病历更新
+     * @param userId
+     */
+    void getUserMedicalToUpdate(int userId);
 }

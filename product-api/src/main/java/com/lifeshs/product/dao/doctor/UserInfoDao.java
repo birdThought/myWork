@@ -75,4 +75,10 @@ public interface UserInfoDao {
      * @return
      */
     List<UserRecordSortPO> getUserRecord(@Param("ids") String ids, @Param("startRow") int startRow, @Param("pageSize") int pageSize);
+
+    /**
+     * 根据医生id获取同科室用户的病历更新
+     * @param userId
+     */
+    void getUserMedicalToUpdate(int userId);
 }

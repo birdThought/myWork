@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.lifeshs.product.api.dao.doctor.userInfo.UserInfoDao">
+<mapper namespace="com.lifeshs.product.dao.doctor.userInfo.UserInfoDao">
 
-    <select id="getUserInfo" parameterType="list" resultType="com.lifeshs.product.api.domain.po.user.UserInfoPO">
+    <select id="getUserInfo" parameterType="list" resultType="com.lifeshs.product.domain.vo.user.UserInfoPO">
         SELECT
         *
         FROM
@@ -75,7 +75,7 @@
         limit #{startRow},#{pageSize}
     </select>
 
-    <resultMap id="UserMeasure" type="com.lifeshs.product.api.domain.po.user.UserMeasurePO">
+    <resultMap id="UserMeasure" type="com.lifeshs.product.domain.vo.user.UserMeasurePO">
         <result column="id" property="id"/>
         <result column="date" property="date"/>
         <result column="device" property="device"/>
@@ -91,7 +91,7 @@
         UPDATE t_user_diseases set diseasesId = #{diseasesId},diseasesName = #{diseasesName}, modifyDate = NOW() where userId = #{id}
     </update>
     
-    <select id="getDiseases" resultType="com.lifeshs.product.api.domain.po.DiseasesPO">
+    <select id="getDiseases" resultType="com.lifeshs.product.domain.vo.record.DiseasesPO">
         SELECT * from t_data_diseases where deleted = 0
     </select>
 
@@ -118,7 +118,7 @@
         );
     </select>
 
-    <select id="getUserRecord" resultType="com.lifeshs.product.api.domain.po.record.UserRecordSortPO">
+    <!--<select id="getUserRecord" resultType="com.lifeshs.product.domain.vo.record.UserRecordSortPO">
         SELECT us.id,us.userName,us.photo,us.realName,greatest(IFNULL(rd.createDate,0),IFNULL(rm.createDate,0),IFNULL(rp.createDate,0),IFNULL(rs.createDate,0)) as max_data
         FROM
         t_user us
@@ -129,6 +129,17 @@
         where us.id in(${ids})
         ORDER BY max_data desc
         limit #{startRow},#{pageSize}
+    </select>-->
+
+    <select id="getUserMedicalToUpdate">
+        select u.userName,u.realName,u.photo,rm.* from t_record_medical rm LEFT JOIN t_user u on rm.userId = u.id
+        LEFT JOIN t_user_department_relation dr on u.id = dr.user_id
+        where dr.department_id = (select departmentId from t_doctor_department_relation  where doctorId = #{id} )
+        and rm.departmentId = (select departmentId from t_doctor_department_relation  where doctorId = #{id} )
+        ORDER BY  rm.createDate desc
     </select>
+
+
+
 
 </mapper>

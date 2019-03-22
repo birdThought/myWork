@@ -90,4 +90,9 @@ public class UserInfoServiceImpl implements UserInfoService {
 
         return p;
     }
+
+    @Override
+    public void getUserMedicalToUpdate(int userId) {
+        userInfoDao.getUserMedicalToUpdate(userId);
+    }
 }
